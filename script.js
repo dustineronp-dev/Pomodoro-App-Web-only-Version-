@@ -68,9 +68,9 @@ const alarmAudioEl = document.getElementById("alarmAudio");
    Minimum of 1 minute so a tiny work session doesn't round to 0.
    --------------------------------------------------------------------- */
 const BREAK_PRESETS = {
-  small:  { label: "Short break",  percent: 0.15 },
+  small: { label: "Short break", percent: 0.15 },
   medium: { label: "Medium break", percent: 0.20 },
-  large:  { label: "Long break",   percent: 0.25 },
+  large: { label: "Long break", percent: 0.25 },
 };
 
 function calculateBreakMinutes(workMinutes, presetKey) {
@@ -113,6 +113,7 @@ function startTimer() {
   state.isRunning = true;
   startPauseBtn.textContent = "Pause";
   state.intervalId = setInterval(tick, 1000);
+  requestNotificationPermissionIfNeeded();
 }
 
 function pauseTimer() {
@@ -147,6 +148,7 @@ function skipPhase() {
 function handlePhaseComplete() {
   pauseTimer();
   playAlarm();
+  showPhaseCompleteNotification();
   switchPhase();
 }
 
@@ -326,6 +328,53 @@ function playAlarm() {
     // Autoplay can be blocked until the user has interacted with the page;
     // the Start button click earlier in the session satisfies that in practice.
   });
+}
+
+/* ---------------------------------------------------------------------
+   7b. NOTIFICATIONS
+   ---------------------------------------------------------------------
+   Desktop notifications so a phase change is noticeable even if the
+   tab isn't focused. This is purely additive: if the browser doesn't
+   support the API, or the user denies/ignores the permission prompt,
+   the app keeps working exactly as before (audio alarm only).
+
+   We deliberately do NOT ask for permission on page load — that's a
+   common dark pattern users have learned to reflexively dismiss.
+   Instead we ask the first time the user presses Start, since that's
+   a genuine signal they intend to use the timer.
+   --------------------------------------------------------------------- */
+function requestNotificationPermissionIfNeeded() {
+  if (!("Notification" in window)) return; // unsupported browser, just skip
+
+  if (Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
+
+function showPhaseCompleteNotification() {
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  // state.mode at this point still reflects the phase that JUST ended,
+  // since switchPhase() hasn't run yet when this is called.
+  const isWorkEnding = state.mode === "work";
+  const title = isWorkEnding ? "Nice work! Time for a break" : "Break's done, let's get back to it";
+  const body = isWorkEnding
+    ? `You focused for ${state.workMinutes} minutes. Take ${state.breakMinutes} to recharge.`
+    : "Ready to start your next focus session?";
+
+  try {
+    new Notification(title, {
+      body,
+      // A simple inline SVG icon keeps this self-contained with no extra
+      // image file to manage. Optional — notifications work without one.
+      tag: "flowmodoro-phase-complete", // re-using the tag prevents stacking duplicates
+    });
+  } catch (err) {
+    // Some browsers (rarely) throw if called outside a user-gesture context
+    // in certain configurations. Failing silently is fine here since the
+    // audio alarm has already played.
+  }
 }
 
 /* ---------------------------------------------------------------------
