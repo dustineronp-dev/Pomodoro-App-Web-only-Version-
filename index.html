@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flowmodoro — focus timer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app" data-mode="work">
+
+    <header class="topbar">
+      <span class="brand">Flowmodoro</span>
+      <button id="settingsBtn" class="icon-btn" aria-label="Open settings">⚙</button>
+    </header>
+
+    <main class="stage">
+
+      <p class="state-label" id="stateLabel">Ready to work</p>
+
+      <div class="timer-display">
+        <span id="timeText">25:00</span>
+      </div>
+
+      <div class="controls">
+        <button id="startPauseBtn" class="btn btn-primary">Start</button>
+        <button id="resetBtn" class="btn btn-ghost">Reset</button>
+        <button id="skipBtn" class="btn btn-ghost">Skip</button>
+      </div>
+
+      <!-- Session map: the signature element. Shows the shape of the
+           whole session (work block + break block) as a strip of segments. -->
+      <div class="session-map" id="sessionMap" aria-label="Session overview"></div>
+
+      <p class="cycle-count" id="cycleCount">Session 1</p>
+
+    </main>
+
+    <!-- Settings panel, hidden by default, toggled via the gear icon -->
+    <aside class="settings-panel" id="settingsPanel" aria-hidden="true">
+      <div class="settings-inner">
+        <div class="settings-header">
+          <h2>Settings</h2>
+          <button id="closeSettingsBtn" class="icon-btn" aria-label="Close settings">✕</button>
+        </div>
+
+        <section class="setting-group">
+          <label for="workMinutesInput">Work session length (minutes)</label>
+          <input type="number" id="workMinutesInput" min="1" max="240" value="25" />
+        </section>
+
+        <section class="setting-group">
+          <label>Break length</label>
+          <p class="setting-hint" id="breakHint">Pick how big a break this work block earns you.</p>
+          <div class="break-options" id="breakOptions">
+            <!-- populated by JS based on workMinutesInput -->
+          </div>
+        </section>
+
+        <section class="setting-group">
+          <label for="alarmUpload">Alarm sound</label>
+          <p class="setting-hint">Upload your own sound, or use the default chime.</p>
+          <input type="file" id="alarmUpload" accept="audio/*" />
+          <div class="alarm-row">
+            <span id="alarmFileName" class="alarm-filename">Default chime</span>
+            <button id="testAlarmBtn" class="btn btn-ghost btn-small">Test</button>
+            <button id="clearAlarmBtn" class="btn btn-ghost btn-small">Reset</button>
+          </div>
+        </section>
+
+        <button id="applySettingsBtn" class="btn btn-primary btn-full">Apply &amp; restart session</button>
+      </div>
+    </aside>
+
+    <div class="settings-overlay" id="settingsOverlay"></div>
+
+  </div>
+
+  <audio id="alarmAudio" preload="auto"></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
