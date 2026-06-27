@@ -19,7 +19,9 @@
   --radius: 10px;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -54,6 +56,11 @@ button {
   padding: 24px 0;
 }
 
+.topbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .brand {
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -74,8 +81,16 @@ button {
   justify-content: center;
   transition: border-color 0.15s, color 0.15s;
 }
-.icon-btn:hover { border-color: var(--text-dim); color: var(--text); }
-.icon-btn:focus-visible { outline: 2px solid var(--work); outline-offset: 2px; }
+
+.icon-btn:hover {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+
+.icon-btn:focus-visible {
+  outline: 2px solid var(--work);
+  outline-offset: 2px;
+}
 
 .stage {
   flex: 1;
@@ -99,7 +114,10 @@ button {
   color: var(--work);
   transition: color 0.3s ease;
 }
-.app[data-mode="break"] .state-label { color: var(--break); }
+
+.app[data-mode="break"] .state-label {
+  color: var(--break);
+}
 
 .timer-display {
   font-family: var(--font-display);
@@ -125,24 +143,45 @@ button {
   color: var(--text);
   transition: transform 0.1s ease, border-color 0.15s, background 0.15s;
 }
-.btn:active { transform: scale(0.97); }
-.btn:focus-visible { outline: 2px solid var(--work); outline-offset: 2px; }
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--work);
+  outline-offset: 2px;
+}
 
 .btn-primary {
   background: var(--work);
   border-color: var(--work);
   color: #1B1D22;
 }
+
 .app[data-mode="break"] .btn-primary {
   background: var(--break);
   border-color: var(--break);
 }
 
-.btn-ghost { color: var(--text-dim); }
-.btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+.btn-ghost {
+  color: var(--text-dim);
+}
 
-.btn-small { padding: 8px 14px; font-size: 0.85rem; }
-.btn-full { width: 100%; padding: 14px; }
+.btn-ghost:hover {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+
+.btn-small {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
+
+.btn-full {
+  width: 100%;
+  padding: 14px;
+}
 
 /* ===========================================================
    Session map — the signature element.
@@ -166,8 +205,13 @@ button {
   overflow: hidden;
 }
 
-.session-map .segment.work { flex: 5; }
-.session-map .segment.break { flex: 1; }
+.session-map .segment.work {
+  flex: 5;
+}
+
+.session-map .segment.break {
+  flex: 1;
+}
 
 .session-map .segment .fill {
   position: absolute;
@@ -176,9 +220,14 @@ button {
   background: var(--work);
   transition: width 0.3s linear;
 }
-.session-map .segment.break .fill { background: var(--break); }
 
-.session-map .segment.complete .fill { width: 100% !important; }
+.session-map .segment.break .fill {
+  background: var(--break);
+}
+
+.session-map .segment.complete .fill {
+  width: 100% !important;
+}
 
 .cycle-count {
   margin: 0;
@@ -213,11 +262,17 @@ button {
   overflow-y: auto;
 }
 
-.app.settings-open .settings-overlay {
+.app.settings-open .settings-overlay,
+.app.stats-open .settings-overlay {
   opacity: 1;
   pointer-events: auto;
 }
-.app.settings-open .settings-panel {
+
+.app.settings-open #settingsPanel {
+  transform: translateX(0);
+}
+
+.app.stats-open #statsPanel {
   transform: translateX(0);
 }
 
@@ -233,6 +288,7 @@ button {
   align-items: center;
   justify-content: space-between;
 }
+
 .settings-header h2 {
   margin: 0;
   font-size: 1.1rem;
@@ -265,7 +321,11 @@ input[type="number"] {
   font-size: 0.95rem;
   font-family: var(--font-display);
 }
-input[type="number"]:focus-visible { outline: 2px solid var(--work); outline-offset: 1px; }
+
+input[type="number"]:focus-visible {
+  outline: 2px solid var(--work);
+  outline-offset: 1px;
+}
 
 input[type="file"] {
   font-size: 0.8rem;
@@ -289,13 +349,24 @@ input[type="file"] {
   cursor: pointer;
   font-size: 0.85rem;
 }
-.break-option:hover { border-color: var(--text-dim); }
+
+.break-option:hover {
+  border-color: var(--text-dim);
+}
+
 .break-option.selected {
   border-color: var(--break);
   background: var(--break-dim);
 }
-.break-option input { accent-color: var(--break); }
-.break-option .break-len { color: var(--text-dim); font-family: var(--font-display); }
+
+.break-option input {
+  accent-color: var(--break);
+}
+
+.break-option .break-len {
+  color: var(--text-dim);
+  font-family: var(--font-display);
+}
 
 .alarm-row {
   display: flex;
@@ -303,6 +374,7 @@ input[type="file"] {
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .alarm-filename {
   font-size: 0.8rem;
   color: var(--text-dim);
@@ -313,15 +385,95 @@ input[type="file"] {
 }
 
 /* ===========================================================
+   Stats panel
+   =========================================================== */
+.stats-summary {
+  display: flex;
+  gap: 12px;
+}
+
+.stats-summary-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.stats-summary-value {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: var(--work);
+}
+
+.stats-summary-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stats-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 100px;
+  padding: 8px 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stats-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.stats-bar {
+  width: 100%;
+  max-width: 28px;
+  min-height: 3px;
+  background: var(--work-dim);
+  border-radius: 3px 3px 0 0;
+  transition: height 0.25s ease;
+}
+
+.stats-bar-col.is-today .stats-bar {
+  background: var(--work);
+}
+
+.stats-bar-day-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.stats-bar-col.is-today .stats-bar-day-label {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ===========================================================
    Accessibility: respect reduced motion
    =========================================================== */
 @media (prefers-reduced-motion: reduce) {
-  * { transition-duration: 0.01ms !important; }
+  * {
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ===========================================================
    Small screens
    =========================================================== */
 @media (max-width: 380px) {
-  .controls { flex-wrap: wrap; }
+  .controls {
+    flex-wrap: wrap;
+  }
 }

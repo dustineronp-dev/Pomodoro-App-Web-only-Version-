@@ -54,6 +54,13 @@ const testAlarmBtn = document.getElementById("testAlarmBtn");
 const clearAlarmBtn = document.getElementById("clearAlarmBtn");
 const alarmAudioEl = document.getElementById("alarmAudio");
 
+const statsBtn = document.getElementById("statsBtn");
+const closeStatsBtn = document.getElementById("closeStatsBtn");
+const statsPanel = document.getElementById("statsPanel");
+const statsTodayEl = document.getElementById("statsToday");
+const statsThisWeekEl = document.getElementById("statsThisWeek");
+const statsBarChartEl = document.getElementById("statsBarChart");
+
 /* ---------------------------------------------------------------------
    3. BREAK PRESETS — the twist
    ---------------------------------------------------------------------
@@ -152,6 +159,9 @@ function handlePhaseComplete() {
   pauseTimer();
   playAlarm();
   showPhaseCompleteNotification();
+  if (state.mode === "work") {
+    recordCompletedWorkSession();
+  }
   switchPhase();
 }
 
@@ -386,6 +396,136 @@ function showPhaseCompleteNotification() {
 }
 
 /* ---------------------------------------------------------------------
+   7c. STATS
+   ---------------------------------------------------------------------
+   We store one timestamp per COMPLETED work session (skipped or
+   reset sessions don't count). Everything else — "today's count",
+   "this week's count", the 7-day bar chart — is computed on demand
+   from that raw list rather than kept as separate running totals.
+   This avoids the totals ever drifting out of sync with reality.
+
+   Each entry is stored as a simple "YYYY-MM-DD" local-date string
+   rather than a full timestamp, since all we ever need is "which day
+   did this happen on" — comparing date strings avoids timezone math
+   entirely for the things we actually display.
+
+   "This week" is defined as Monday through Sunday, matching the
+   ISO-8601 convention.
+   --------------------------------------------------------------------- */
+const STATS_STORAGE_KEY = "flowmodoro_completed_sessions";
+
+function getLocalDateString(date) {
+  // Building the string manually (rather than toISOString, which is UTC)
+  // keeps this anchored to the user's local calendar day.
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function loadCompletedSessions() {
+  try {
+    const raw = localStorage.getItem(STATS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function recordCompletedWorkSession() {
+  const sessions = loadCompletedSessions();
+  sessions.push(getLocalDateString(new Date()));
+  try {
+    localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(sessions));
+  } catch (err) {
+    // Storage full or unavailable — stats just won't persist this entry.
+    // Not worth interrupting the user with an alert for this.
+  }
+}
+
+// Returns the Monday (local midnight) of the week containing `date`.
+function getMondayOfWeek(date) {
+  const result = new Date(date);
+  const dayOfWeek = result.getDay(); // 0 = Sunday, 1 = Monday, ... 6 = Saturday
+  // Distance back to Monday: Sunday needs -6, everything else needs -(dayOfWeek - 1)
+  const distanceToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  result.setDate(result.getDate() - distanceToMonday);
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
+function getTodayCount(sessions) {
+  const todayStr = getLocalDateString(new Date());
+  return sessions.filter((dateStr) => dateStr === todayStr).length;
+}
+
+function getThisWeekCount(sessions) {
+  const monday = getMondayOfWeek(new Date());
+  const mondayStr = getLocalDateString(monday);
+  const sunday = new Date(monday);
+  sunday.setDate(sunday.getDate() + 6);
+  const sundayStr = getLocalDateString(sunday);
+
+  // Plain string comparison works here because YYYY-MM-DD sorts
+  // chronologically as a string too.
+  return sessions.filter((dateStr) => dateStr >= mondayStr && dateStr <= sundayStr).length;
+}
+
+// Returns an array of 7 { dateStr, label, count, isToday } objects,
+// oldest to newest, ending on today.
+function getLast7DaysBreakdown(sessions) {
+  const days = [];
+  const today = new Date();
+
+  for (let i = 6; i >= 0; i--) {
+    const day = new Date(today);
+    day.setDate(day.getDate() - i);
+    const dateStr = getLocalDateString(day);
+    const count = sessions.filter((s) => s === dateStr).length;
+    const label = day.toLocaleDateString(undefined, { weekday: "short" }).slice(0, 2);
+
+    days.push({ dateStr, label, count, isToday: i === 0 });
+  }
+
+  return days;
+}
+
+function renderStats() {
+  const sessions = loadCompletedSessions();
+
+  statsTodayEl.textContent = getTodayCount(sessions);
+  statsThisWeekEl.textContent = getThisWeekCount(sessions);
+
+  const breakdown = getLast7DaysBreakdown(sessions);
+  const maxCount = Math.max(1, ...breakdown.map((d) => d.count)); // avoid divide-by-zero
+
+  statsBarChartEl.innerHTML = "";
+  breakdown.forEach((day) => {
+    const col = document.createElement("div");
+    col.className = "stats-bar-col" + (day.isToday ? " is-today" : "");
+
+    const heightPercent = (day.count / maxCount) * 100;
+
+    col.innerHTML = `
+      <div class="stats-bar" style="height: ${day.count === 0 ? 3 : heightPercent}%" title="${day.count} session${day.count === 1 ? "" : "s"}"></div>
+      <span class="stats-bar-day-label">${day.label}</span>
+    `;
+    statsBarChartEl.appendChild(col);
+  });
+}
+
+function openStats() {
+  renderStats(); // refresh in case sessions completed since last open
+  appEl.classList.add("stats-open");
+  settingsOverlay.setAttribute("aria-hidden", "false");
+}
+
+function closeStats() {
+  appEl.classList.remove("stats-open");
+  settingsOverlay.setAttribute("aria-hidden", "true");
+}
+
+/* ---------------------------------------------------------------------
    8. INIT
    --------------------------------------------------------------------- */
 function init() {
@@ -401,9 +541,16 @@ function init() {
 
   settingsBtn.addEventListener("click", openSettings);
   closeSettingsBtn.addEventListener("click", closeSettings);
-  settingsOverlay.addEventListener("click", closeSettings);
   workMinutesInput.addEventListener("input", renderBreakOptions);
   applySettingsBtn.addEventListener("click", applySettings);
+
+  statsBtn.addEventListener("click", openStats);
+  closeStatsBtn.addEventListener("click", closeStats);
+
+  settingsOverlay.addEventListener("click", () => {
+    closeSettings();
+    closeStats();
+  });
 
   alarmUploadInput.addEventListener("change", handleAlarmUpload);
   clearAlarmBtn.addEventListener("click", clearCustomAlarm);
