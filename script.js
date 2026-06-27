@@ -114,6 +114,7 @@ function startTimer() {
   startPauseBtn.textContent = "Pause";
   state.intervalId = setInterval(tick, 1000);
   requestNotificationPermissionIfNeeded();
+  stopAlarm();
 }
 
 function pauseTimer() {
@@ -132,6 +133,7 @@ function toggleStartPause() {
 
 function resetTimer() {
   pauseTimer();
+  stopAlarm();
   state.mode = "work";
   state.secondsLeft = state.workMinutes * 60;
   state.totalSecondsForPhase = state.secondsLeft;
@@ -142,6 +144,7 @@ function resetTimer() {
 
 function skipPhase() {
   pauseTimer();
+  stopAlarm();
   switchPhase();
 }
 
@@ -328,6 +331,11 @@ function playAlarm() {
     // Autoplay can be blocked until the user has interacted with the page;
     // the Start button click earlier in the session satisfies that in practice.
   });
+}
+
+function stopAlarm() {
+  alarmAudioEl.pause();
+  alarmAudioEl.currentTime = 0;
 }
 
 /* ---------------------------------------------------------------------
