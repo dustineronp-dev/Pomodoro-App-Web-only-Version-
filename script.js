@@ -54,6 +54,7 @@ const testAlarmBtn = document.getElementById("testAlarmBtn");
 const clearAlarmBtn = document.getElementById("clearAlarmBtn");
 const alarmAudioEl = document.getElementById("alarmAudio");
 
+const themeToggleBtn = document.getElementById("themeToggleBtn");
 const statsBtn = document.getElementById("statsBtn");
 const closeStatsBtn = document.getElementById("closeStatsBtn");
 const statsPanel = document.getElementById("statsPanel");
@@ -526,6 +527,48 @@ function closeStats() {
 }
 
 /* ---------------------------------------------------------------------
+   7c-2. THEME TOGGLE
+   ---------------------------------------------------------------------
+   Dark is the default and always what a fresh visitor sees — no OS
+   auto-detection, kept deliberately simple. The choice is remembered
+   in localStorage so it persists across visits once someone picks
+   light mode.
+
+   The icon shown represents the theme you'll switch TO, not the one
+   you're currently in (standard convention: moon = "go dark", but
+   since we start dark, the moon icon actually means "you are in dark,
+   tap to go light" — so functionally it shows the OPPOSITE of current).
+   --------------------------------------------------------------------- */
+const THEME_STORAGE_KEY = "flowmodoro_theme";
+
+function applyTheme(theme) {
+  if (theme === "light") {
+    document.documentElement.setAttribute("data-theme", "light");
+    themeToggleBtn.textContent = "☀️";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    themeToggleBtn.textContent = "🌙";
+  }
+}
+
+function loadStoredTheme() {
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  applyTheme(stored === "light" ? "light" : "dark");
+}
+
+function toggleTheme() {
+  const isCurrentlyLight = document.documentElement.getAttribute("data-theme") === "light";
+  const nextTheme = isCurrentlyLight ? "dark" : "light";
+  applyTheme(nextTheme);
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+  } catch (err) {
+    // Theme just won't persist across reloads if storage is unavailable;
+    // not worth interrupting the user for this.
+  }
+}
+
+/* ---------------------------------------------------------------------
    7d. KEYBOARD SHORTCUTS
    ---------------------------------------------------------------------
    Spacebar toggles Start/Pause. Two things to guard against:
@@ -554,12 +597,14 @@ function handleGlobalKeydown(event) {
    --------------------------------------------------------------------- */
 function init() {
   loadStoredAlarm();
+  loadStoredTheme();
   renderTime();
   renderModeUI();
   rebuildSessionMap();
   renderBreakOptions();
 
   startPauseBtn.addEventListener("click", toggleStartPause);
+  themeToggleBtn.addEventListener("click", toggleTheme);
   resetBtn.addEventListener("click", resetTimer);
   skipBtn.addEventListener("click", skipPhase);
 

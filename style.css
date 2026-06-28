@@ -19,6 +19,32 @@
   --radius: 10px;
 }
 
+/* ---------------------------------------------------------------------
+   Light theme override
+   ---------------------------------------------------------------------
+   Same accent colors (--work, --break) carry over unchanged — they're
+   the brand identity and should look the same in both themes. Only the
+   neutral scale flips, plus the "-dim" tint variables, which need to
+   become light tints instead of dark tints to still read correctly
+   against a light background.
+
+   Applied via [data-theme="light"] on the .app root element, toggled
+   by JS. Everything elsewhere in this file is untouched, since every
+   rule already references these variables rather than hardcoded colors.
+   --------------------------------------------------------------------- */
+html[data-theme="light"] {
+  --bg: #EDE7DC;
+  --bg-raised: #E2DBCB;
+  --text: #2E2A24;
+  --text-dim: #6B6458;
+  --border: #C9BFAC;
+
+  --work: #6587A4;
+  --work-dim: #D8E2EA;
+  --break: #5F8C6F;
+  --break-dim: #DCEAE0;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -64,7 +90,7 @@ button {
 .brand {
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--work);
+  color: var(--text-dim);
   font-size: 0.95rem;
 }
 
