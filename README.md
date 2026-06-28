@@ -7,6 +7,14 @@ and the app calculates proportional break options for you.
 Built with plain HTML, CSS, and JavaScript — no frameworks, no build step —
 as a learning project to practice core web development fundamentals.
 
+**🔗 [Try it live](https://dustineronp-dev.github.io/Pomodoro-App-Web-only-Version-/)**
+
+## Screenshots
+
+| Timer | Settings | Stats |
+|---|---|---|
+| ![Timer screen in dark mode showing the countdown and session map](screenshots/light-dark-mode.png) | ![Settings panel showing custom work length and scaled break presets](screenshots/settings-panel.png) | ![Stats panel showing today/week counts and a 7-day bar chart](screenshots/stats-panel.png) |
+
 ## Features
 
 - **Custom work sessions** — set any length from 1 to 240 minutes.
@@ -22,13 +30,21 @@ as a learning project to practice core web development fundamentals.
 - **Custom alarm sound** — upload your own audio clip to play when a
   work or break phase ends. Saved in the browser (`localStorage`) so it
   persists between visits.
+- **Desktop notifications** — get notified when a phase ends even if
+  the tab isn't focused. Falls back gracefully if denied or unsupported.
+- **Session stats** — tracks completed work sessions and shows
+  today's count, this week's count (Mon–Sun), and a 7-day bar chart.
+- **Spacebar shortcut** — press Space to start/pause from anywhere
+  (ignored while typing in an input).
+- **Light/dark theme toggle** — defaults to dark, persists your choice.
 - **Start / Pause / Reset / Skip** controls.
 
 ## Tech
 
 - HTML5
 - CSS3 (custom properties, flexbox, no framework)
-- Vanilla JavaScript (`setInterval` timer loop, `localStorage`, `FileReader`)
+- Vanilla JavaScript (`setInterval` timer loop, `localStorage`, `FileReader`,
+  the Notification API)
 
 ## Running it locally
 
@@ -48,9 +64,10 @@ No build tools needed. Either:
 
 ```
 .
-├── index.html    # markup
-├── style.css     # design system + layout
-├── script.js     # timer engine, break-preset logic, settings, alarm handling
+├── index.html       # markup
+├── style.css        # design system + layout + light/dark themes
+├── script.js        # timer engine, break-preset logic, stats, settings, alarm/notification handling
+├── screenshots/      # README images
 └── README.md
 ```
 
@@ -60,11 +77,13 @@ This was built as a hands-on exercise to strengthen core JavaScript and
 git fundamentals — DOM manipulation, timers, state management, and
 localStorage — ahead of applying for junior developer roles. Commit
 history is kept intentionally granular (structure → logic/styling →
-docs/polish) to reflect how the project was actually built.
+docs/polish) and development was tracked through GitHub Issues and
+Pull Requests to mirror a real team workflow, even working solo.
 
 ## Possible future improvements
 
-- Notification API support for alerts when the tab isn't focused
-- Daily/weekly stats on completed sessions
-- Keyboard shortcuts (space to start/pause)
-- Dark/light theme toggle
+- Multiple work/break cycles in a row before a longer rest (the classic
+  "4 pomodoros then a long break" pattern)
+- Export/import stats data
+- Mobile-friendly install (PWA support)
+- More theme options beyond light/dark
