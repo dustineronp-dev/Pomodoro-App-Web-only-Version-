@@ -526,6 +526,30 @@ function closeStats() {
 }
 
 /* ---------------------------------------------------------------------
+   7d. KEYBOARD SHORTCUTS
+   ---------------------------------------------------------------------
+   Spacebar toggles Start/Pause. Two things to guard against:
+
+   1. If focus is inside a text input (currently just the work-minutes
+      field), spacebar should type a literal space, not hijack the timer.
+   2. The browser's default behavior for spacebar is to scroll the page
+      down — we suppress that specifically when we're about to toggle
+      the timer, so it doesn't both scroll AND toggle at once.
+   --------------------------------------------------------------------- */
+function isTypingInInput(target) {
+  const tagName = target.tagName;
+  return tagName === "INPUT" || tagName === "TEXTAREA";
+}
+
+function handleGlobalKeydown(event) {
+  if (event.code !== "Space") return;
+  if (isTypingInInput(event.target)) return;
+
+  event.preventDefault(); // stop the page from scrolling
+  toggleStartPause();
+}
+
+/* ---------------------------------------------------------------------
    8. INIT
    --------------------------------------------------------------------- */
 function init() {
@@ -546,6 +570,8 @@ function init() {
 
   statsBtn.addEventListener("click", openStats);
   closeStatsBtn.addEventListener("click", closeStats);
+
+  document.addEventListener("keydown", handleGlobalKeydown);
 
   settingsOverlay.addEventListener("click", () => {
     closeSettings();
